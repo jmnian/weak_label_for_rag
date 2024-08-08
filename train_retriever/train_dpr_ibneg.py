@@ -38,7 +38,7 @@ parser.add_argument('--num_epochs', type=int, help='Training epochs')
 parser.add_argument('--encoder_name', type=str, help='What model to use as the encoder of the retriever')
 parser.add_argument('--product', type=str, help='Train using cosine product or dot product')
 parser.add_argument('--gt_or_weak', type=str, help='Use Ground truth data to train or not')
-parser.add_argument('--tsv', type=str, help='When using Ground truth data to train, which tsv to use')
+parser.add_argument('--tsv', type=str, help='When using Ground truth or Weak data to train, which tsv to use')
 args = parser.parse_args()
 
 if args.gt_or_weak == "gt":
@@ -48,7 +48,6 @@ elif args.gt_or_weak == "weak":
     print("Using llm weak label to train, in-batch negative style")
     corpus, queries, qrels = GenericDataLoader(data_folder=args.data_path, 
                                             qrels_folder=args.data_path+args.weak_label_path).load(split=args.tsv)
-#### Please Note not all datasets contain a dev split, comment out the line if such the case
 dev_corpus, dev_queries, dev_qrels = GenericDataLoader(args.data_path).load(split="test")
 
 

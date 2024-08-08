@@ -5,4 +5,3 @@ train_retriever/output
 evaluations/corpus_embeddings
 evaluations/qa 
 evaluations/significance_test.py
-weak_label_gen

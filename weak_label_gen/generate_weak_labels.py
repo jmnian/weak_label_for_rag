@@ -683,5 +683,5 @@ if __name__ == '__main__':
     # supported llm names: llama3   llama3.1    gemma2     phi3    mistral     llama2
     #                      bm25 results will come out together
     # first_stage_ret_count: how many documents BM25 retrieves for a given query
-    # levels: the Ks in recall@k and mrr@k
+    # levels: the Ks in recall@k and overall mrr
     study_different_llm_on_msmarco(first_stage_ret_count=100, llm_name="llama3", levels=[1, 5, 10, 20, 50, 100])

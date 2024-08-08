@@ -14,8 +14,8 @@ Step 3. Train Retriever
         dpr gt   -> python train_retriever/train_dpr_gt.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2000_ValQ3000" --num_epochs=16 --encoder_name="bert-base-uncased" --product="cosine" --loss="triplet"
         dpr ibneg-> python train_retriever/train_dpr_ibneg.py --product="cosine" --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --tsv="train_weak_top5" --data_path="xx" 
         dpr ibneg gt -> python train_retriever/train_dpr_ibneg.py --num_epochs=20 --encoder_name="Yibin-Lei/ReContriever" --product="cosine"  --gt_or_weak="gt" --tsv="train_groundtruth_top1" --data_path="xx"
-        ce ibneg -> working on it 
-
+        ce ibneg -> python train_retriever/train_ce_ibneg.py --product="cosine" --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --tsv="train_weak" --data_path="xx"
+        ce ibneg gt -> python train_retriever/train_ce_ibneg.py --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --product="cosine"  --gt_or_weak="gt" --tsv="train_groundtruth_top1" --data_path="xx"
 
 Step 4. Evaluate Retriever's Ability on our sampled data:
         DPR: 

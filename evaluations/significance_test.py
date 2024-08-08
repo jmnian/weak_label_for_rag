@@ -2,8 +2,8 @@ import json
 from scipy.stats import ttest_rel, wilcoxon 
 import numpy as np
 
-baseline_file = "/WAVE/users2/unix/jnian/WeakLabelForRAG/evaluations/qa/nq/ReContriever__08_07_18:34_10token.json"
-improved_file = "/WAVE/users2/unix/jnian/WeakLabelForRAG/evaluations/qa/nq/dpr_weak_ibneg_nq_train_ReContriever_top1_08_06_10:33__08_07_18:34_10token.json"
+baseline_file = "/WAVE/users2/unix/jnian/WeakLabelForRAG/evaluations/qa/nq/ReContriever__08_07_23:40_30token.json"
+improved_file = "evaluations/qa/nq/dpr_weak_ibneg_nq_train_ReContriever_top1_08_06_10:33__08_07_23:45_30token.json"
 
 with open(baseline_file, 'r') as f:
     baseline_data = json.load(f)
