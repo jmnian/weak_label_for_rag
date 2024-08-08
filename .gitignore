@@ -4,3 +4,4 @@ sentence-transformers_3.0.0/
 train_retriever/output
 evaluations/corpus_embeddings
 evaluations/qa 
+evaluations/significance_test.py
