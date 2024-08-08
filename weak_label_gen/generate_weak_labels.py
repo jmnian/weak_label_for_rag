@@ -1,6 +1,6 @@
 import os, sys, csv, random, json, re, pickle
-os.environ['HF_HOME'] = '/local/scratch'
-os.environ['TRANSFORMERS_CACHE'] = '/local/scratch'
+os.environ['HF_HOME'] = '/local/scratch' # Comment this out if you are not running on WAVE
+# os.environ['TRANSFORMERS_CACHE'] = '/local/scratch'
 import numpy as np
 import pandas as pd 
 from tqdm import tqdm
@@ -579,17 +579,109 @@ def produce_all_answers_file(dataset_name, num_question, num_val_question, save_
         
         
         
+def recall_at_k(ranked_list, relevant_set, k):
+    relevant_retrieved = 0
+    for pid, _ in ranked_list[:k]:
+        if pid in relevant_set:
+            relevant_retrieved += 1
+    return relevant_retrieved / len(relevant_set)
+
+def mean_reciprocal_rank(ranked_list, relevant_set):
+    for index, (pid, _) in enumerate(ranked_list, start=1):
+        if pid in relevant_set:
+            return 1 / index
+    return 0
+
+def study_different_llm_on_msmarco(first_stage_ret_count, llm_name, levels): 
+    
+    data_path = "data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000"
+    
+    questions, corpus, answers, qrel, weak_and_ground_truth_labels = {}, {}, {}, {}, {}
+    questions = load_jsonl(questions, f"{data_path}/queries.jsonl")
+    corpus = load_jsonl(corpus, f"{data_path}/corpus.jsonl")
+    answers = load_jsonl(answers, f"{data_path}/answers.jsonl")
+    qrel_path = f"{data_path}/qrels/val.tsv"
+    with open(qrel_path, 'r', encoding='utf-8') as file:
+        reader = csv.DictReader(file, delimiter='\t')
+        for row in reader:
+            qid = int(row['query-id'])
+            if row['score'] == '1': 
+                if qid not in qrel:
+                    qrel[qid] = []  # Initialize an empty list for this query-id if it doesn't exist
+                qrel[qid].append(int(row['corpus-id']))
+    
+    bm25 = load_or_create_bm25(corpus, f"{data_path}/bm25_{len(corpus)}.pkl")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("using", device)
+    llm, llm_tokenizer = load_llm(llm_name, device, False)
         
-        
-        
+    for qid, rel_pids in tqdm(qrel.items(), desc="Processing questions"):
+        question, answer = questions[qid], answers[qid]
+        ### (1) bm25 retrieve top 100 
+        question_tokens = word_tokenize(question.lower())
+        passage_scores = bm25.get_scores(question_tokens)
+        sorted_indices = np.argsort(passage_scores)[::-1][:first_stage_ret_count]
+        top_passages_with_scores = [(list(corpus.keys())[idx], corpus[list(corpus.keys())[idx]], passage_scores[idx]) for idx in sorted_indices]
+
+        weak_and_ground_truth_labels[qid] = {}
+        weak_and_ground_truth_labels[qid]["rel_passage"] = rel_pids # why list of rel_pid you may ask, because nq, trivia, wq, squad has multiple relevant passages
+        weak_and_ground_truth_labels[qid]["bm25_ranked_list"] = [(pid, score) for pid, _, score in top_passages_with_scores]
+        ### (2) rerank by infer LLM 1 by 1, record score
+        llm_score_list = []
+        for pid, passage, _ in top_passages_with_scores:         # 0 here means 0 shot prompt
+            log_likelihood = llm_calculate_sequence_log_likelihood(0, question, passage, answer, llm, llm_tokenizer, device) 
+            llm_score_list.append((pid, log_likelihood))
+        llm_ranked_list = sorted(llm_score_list, key=lambda x: x[1], reverse=True)
+        weak_and_ground_truth_labels[qid]["llm_ranked_list"] = llm_ranked_list 
+        if len(weak_and_ground_truth_labels) == 2:
+            break 
+    
+    # Use weak_and_ground_truth_labels to evaluate the quality of weak labels and bm25 performance
+    results = {
+        'recall': {model: {k: [] for k in levels} for model in ['llm', 'bm25']},
+        'mrr': {model: [] for model in ['llm', 'bm25']},
+    }
+
+    # Process each query and calculate metrics
+    for qid, info in weak_and_ground_truth_labels.items():
+        relevant_pids = set(info['rel_passage'])
+        for model in ['llm_ranked_list', 'bm25_ranked_list']:
+            model_key = 'llm' if model == 'llm_ranked_list' else 'bm25'
+            ranked_list = sorted(info[model], key=lambda x: x[1], reverse=True)
+            
+            for k in levels:
+                results['recall'][model_key][k].append(recall_at_k(ranked_list, relevant_pids, k))
+            results['mrr'][model_key].append(mean_reciprocal_rank(ranked_list, relevant_pids))
+
+    # Print out the results and perform statistical tests
+    for metric in results:
+        if metric == 'recall':
+            for k in levels:
+                avg_recall_llm = np.mean(results['recall']['llm'][k])
+                avg_recall_bm25 = np.mean(results['recall']['bm25'][k])
+                print(f"Average Recall@{k} for LLM: {avg_recall_llm:.4f}, BM25: {avg_recall_bm25:.4f}")
+        else:
+            avg_metric_llm = np.mean(results[metric]['llm'])
+            avg_metric_bm25 = np.mean(results[metric]['bm25'])
+            print(f"Average {metric.upper()} for LLM: {avg_metric_llm:.4f}, BM25: {avg_metric_bm25:.4f}")
+    
     
     
 if __name__ == '__main__': 
     set_random_seed(42)
-    # Works on my laptop but not on WAVE. Huggingface datasets package issue. Don't want to deal with it. 
     # path = generate_corpus_queries_qrels("trivia", "train", 500_000, 2000, 3000, 0, "/WAVE/users2/unix/jnian/WeakLabelForRAG/data")
     # specifically for WebQ:
     # path = generate_corpus_queries_qrels("wq", "train", 163683, 2000, 474, 0, "/WAVE/users2/unix/jnian/WeakLabelForRAG/data")
     # generate_weak_labels(False, "llama3", 50, 0, "/WAVE/users2/unix/jnian/WeakLabelForRAG/data/trivia_train_corpus500000_weakTrainQ2000_ValQ3000")
 
-    produce_all_answers_file("wq", 2000, 474, "/WAVE/users2/unix/jnian/WeakLabelForRAG/data/wq_train_corpus163683_weakTrainQ2000_ValQ474")
+    # produce_all_answers_file("wq", 2000, 474, "/WAVE/users2/unix/jnian/WeakLabelForRAG/data/wq_train_corpus163683_weakTrainQ2000_ValQ474")
+    
+    
+    
+    # Below are not for generating weak label dataset
+    ###################################################################################
+    # supported llm names: llama3   llama3.1    gemma2     phi3    mistral     llama2
+    #                      bm25 results will come out together
+    # first_stage_ret_count: how many documents BM25 retrieves for a given query
+    # levels: the Ks in recall@k and mrr@k
+    study_different_llm_on_msmarco(first_stage_ret_count=100, llm_name="llama3", levels=[1, 5, 10, 20, 50, 100])

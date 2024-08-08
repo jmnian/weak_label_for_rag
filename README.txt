@@ -41,3 +41,9 @@ Step 5. Evaluate QA Ability (--data could be msmarco/nq/squad/trivia/wq )
                 python evaluations/QA_performance.py --llm_name="llama3" --new_token=5 --use_gt_passage="y" --data="xx"
         No Passage: 
                 python evaluations/QA_performance.py --top_k=0 --num_shot=0 --llm_name="llama3" --new_token=5 --use_gt_passage="n" --data="xx"
+
+
+
+To Run Table 5 (Fix prompt study different llm, ms marco on 500 val dataset): 
+        Go to "weak_label_gen/generate_weak_labels.py", change parameters in "study_different_llm_on_msmarco" and run "python weak_label_gen/generate_weak_labels.py"
+        
