@@ -138,8 +138,10 @@ for passages, question, answer, qid in tqdm(pqa_list, desc="Generating Answers")
     answer_gen = tokenizer.decode(actual_output, skip_special_tokens=True)
 
     if args.data == "msmarco":
-        a, g = eval_util.normalize_answer(answer[0]), eval_util.normalize_answer(answer_gen)
+        a, g = eval_util.normalize_answer(answer), eval_util.normalize_answer(answer_gen)
         answers.append(([a], g, qid))
+        # print("true answer:", a)
+        # print("gen  answer:", g)
     else: 
         # "answer" is a list because those datasets may have multiple answers 
         alist = []

@@ -353,7 +353,7 @@ def evaluate(answers, file_name, token_num):
             'meteor': 0,
             'em': 0,
         }
-
+        evaluated_at_least_once = False 
         for answer in answer_list:
             if answer is None or len(answer) == 0 or len(answer_gen) == 0:
                 bad = bad + 1
@@ -375,8 +375,9 @@ def evaluate(answers, file_name, token_num):
             best_scores['bleu-1'] = max(best_scores['bleu-1'], bleu_1_score)
             best_scores['meteor'] = max(best_scores['meteor'], meteor)
             best_scores['em'] = max(best_scores['em'], em)
-        
-        results[qid] = best_scores
+            evaluated_at_least_once = True 
+        if evaluated_at_least_once:
+            results[qid] = best_scores
 
     avg_scores = {metric: sum(scores[metric] for scores in results.values()) / len(results) for metric in results[next(iter(results))]}
     results["avg"] = avg_scores

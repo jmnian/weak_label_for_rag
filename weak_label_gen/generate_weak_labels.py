@@ -633,8 +633,6 @@ def study_different_llm_on_msmarco(first_stage_ret_count, llm_name, levels):
             llm_score_list.append((pid, log_likelihood))
         llm_ranked_list = sorted(llm_score_list, key=lambda x: x[1], reverse=True)
         weak_and_ground_truth_labels[qid]["llm_ranked_list"] = llm_ranked_list 
-        if len(weak_and_ground_truth_labels) == 2:
-            break 
     
     # Use weak_and_ground_truth_labels to evaluate the quality of weak labels and bm25 performance
     results = {

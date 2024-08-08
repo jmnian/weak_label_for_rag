@@ -18,14 +18,17 @@ Step 3. Train Retriever
         ce ibneg gt -> python train_retriever/train_ce_ibneg.py --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --product="cosine"  --gt_or_weak="gt" --tsv="train_groundtruth_top1" --data_path="xx"
 
 Step 4. Evaluate Retriever's Ability on our sampled data:
+        BM25: 
+                go to bm25_evaluation
         DPR: 
                 python evaluations/retriever_ability.py --data_path="xx" --model_path="xx"
-        BM25:
-                go to bm25_evaluation
-        ReContriever:
+        ReContriever BiEncoder:
                 python evaluations/retriever_ability.py --eval_recontriever --data_path="xx"
-        Contriever: 
+        Contriever BiEncoder: 
                 python evaluations/retriever_ability.py --eval_contriever --data_path="xx"
+        BM25+CE:
+                python evaluations/bm25ce_ability.py --bm25_topk=100 --data_path="xx" --model_path="xx" 
+
         Evaluate Retriever's Ability on BEIR 
         DPR:
                 python evaluations/retriever_ability_beir.py --beir_dataset_path="/WAVE/datasets/yfang_lab/BEIR" --model_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/train_retriever/output/dpr_weak_2000positive_ibneg_msmarco_qa_v2_train_07_22_22:33" --dataset_name="msmarco"
@@ -34,13 +37,13 @@ Step 4. Evaluate Retriever's Ability on our sampled data:
         
 Step 5. Evaluate QA Ability (--data could be msmarco/nq/squad/trivia/wq )
         DPR: 
-                python evaluations/QA_performance.py --top_k=5 --num_shot=0 --llm_name="llama3" --new_token=5 --use_gt_passage="n" --data="xx" --model_path="xx"
+                python evaluations/QA_performance.py --top_k=5 --num_shot=0 --llm_name="llama3" --new_token=20 --use_gt_passage="n" --data="xx" --model_path="xx"
         BM25:
-                python evaluations/QA_performance.py --model_path="bm25" --top_k=5 --num_shot=0 --llm_name="llama3" --new_token=5 --use_gt_passage="n" --data="xx"
+                python evaluations/QA_performance.py --model_path="bm25" --top_k=5 --num_shot=0 --llm_name="llama3" --new_token=20 --use_gt_passage="n" --data="xx"
         Ground truth passage:
-                python evaluations/QA_performance.py --llm_name="llama3" --new_token=5 --use_gt_passage="y" --data="xx"
+                python evaluations/QA_performance.py --llm_name="llama3" --new_token=20 --use_gt_passage="y" --data="xx"
         No Passage: 
-                python evaluations/QA_performance.py --top_k=0 --num_shot=0 --llm_name="llama3" --new_token=5 --use_gt_passage="n" --data="xx"
+                python evaluations/QA_performance.py --top_k=0 --num_shot=0 --llm_name="llama3" --new_token=20 --use_gt_passage="n" --data="xx"
 
 
 
