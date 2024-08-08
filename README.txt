@@ -10,8 +10,8 @@ Step 2. Evaluate Weak Label's Quality
 
 Step 3. Train Retriever 
     Before start training, make sure to make train_groundtruth_allones.tsv and val.tsv and test.tsv. Scripts are in /data_workers/
-        dpr weak -> python train_retriever/train_dpr_weak.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ1200_ValQ10000" --weak_label_path="/llama3_old_prompt" --num_hard_neg=10 --num_epochs=16 --encoder_name="bert-base-uncased" --product="cosine" --loss="triplet"
-        dpr gt   -> python train_retriever/train_dpr_gt.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ1200_ValQ10000" --num_epochs=16 --encoder_name="bert-base-uncased" --product="cosine" --loss="triplet"
+        dpr weak -> python train_retriever/train_dpr_weak.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2000_ValQ3000" --weak_label_path="/llama3_old_prompt" --num_hard_neg=10 --num_epochs=16 --encoder_name="bert-base-uncased" --product="cosine" --loss="triplet"
+        dpr gt   -> python train_retriever/train_dpr_gt.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2000_ValQ3000" --num_epochs=16 --encoder_name="bert-base-uncased" --product="cosine" --loss="triplet"
         dpr ibneg-> python train_retriever/train_dpr_ibneg.py --product="cosine" --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --tsv="train_weak_top5" --data_path="xx" 
         dpr ibneg gt -> python train_retriever/train_dpr_ibneg.py --num_epochs=20 --encoder_name="Yibin-Lei/ReContriever" --product="cosine"  --gt_or_weak="gt" --tsv="train_groundtruth_top1" --data_path="xx"
 
@@ -26,7 +26,7 @@ Step 4. Evaluate Retriever's Ability on our sampled data:
                 python evaluations/retriever_ability.py --eval_contriever --data_path="xx"
         Evaluate Retriever's Ability on BEIR 
         DPR:
-                python evaluations/retriever_ability_beir.py --beir_dataset_path="/WAVE/datasets/yfang_lab/BEIR" --model_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/train_retriever/output/dpr_weak_1200positive_ibneg_msmarco_qa_v2_train_07_22_22:33" --dataset_name="msmarco"
+                python evaluations/retriever_ability_beir.py --beir_dataset_path="/WAVE/datasets/yfang_lab/BEIR" --model_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/train_retriever/output/dpr_weak_2000positive_ibneg_msmarco_qa_v2_train_07_22_22:33" --dataset_name="msmarco"
         Use untrained dpr: 
                 python evaluations/retriever_ability_beir.py --beir_dataset_path="/WAVE/datasets/yfang_lab/BEIR" --model_path="bert-base-uncased" --dataset_name="msmarco"
         
