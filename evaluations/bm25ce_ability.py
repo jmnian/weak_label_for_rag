@@ -5,7 +5,11 @@ from beir.reranking.models import CrossEncoder
 from beir.reranking import Rerank, models 
 from time import time
 import argparse, logging, json, os
-from bm25_evaluation import load_or_create_bm25
+import numpy as np
+import eval_util
+from rank_bm25 import BM25Okapi
+from tqdm import tqdm
+from nltk.tokenize import word_tokenize
 os.environ['HF_HOME'] = '/local/scratch'
 
 
@@ -35,17 +39,44 @@ corpus, queries, qrels = GenericDataLoader(args.data_path).load(split=split)
 cross_encoder_model = CrossEncoder(model_name)
 reranker = Rerank(cross_encoder_model, batch_size=128)
 
+def load_or_create_bm25_results(data_path, corpus, qrels, queries, bm25_topk=100):
+    results_file = os.path.join(data_path, f'bm25_top{bm25_topk}_on_test.json')
+
+    if os.path.isfile(results_file):
+        print("Load existing results from the JSON file", results_file)
+        with open(results_file, 'r') as f:
+            results = json.load(f)
+    else: 
+        print("No Results file found, creating one right now. ")
+        results = {}
+        
+        bm25 = eval_util.load_or_create_bm25(corpus, f"{data_path}/bm25_{len(corpus)}.pkl")
+        
+        for query_id, relevant_docs in tqdm(qrels.items(), desc="BM25 retrieving"):
+            query = queries[query_id]
+            query_tokens = word_tokenize(query.lower())
+            scores = bm25.get_scores(query_tokens)
+            ranked_indices = np.argsort(scores)[::-1][:bm25_topk]
+            results[query_id] = {str(idx): scores[idx] for idx in ranked_indices}
+
+        with open(results_file, 'w') as f:
+            json.dump(results, f, indent=4)
+        print("BM25 Results saved at", results_file)
+
+    return results
+
 #### Format results into {qid: {pid: score, pid:score, ...}}
-results = {}
-bm25 = load_or_create_bm25(corpus, f"{data_path}/bm25_{len(corpus)}.pkl")
-
-ranked_lists = {}
-for query_id, corpus_id in tqdm(qrels.items(), desc="Processing Queries"):
-    query = queries[query_id]
-    scores = bm25.get_scores(query)
-    ranked_indices = np.argsort(scores)[::-1][:args.bm25_topk]
-    ranked_docs = [list(corpus.keys())[idx] for idx in ranked_indices]
-    ranked_lists[query_id] = ranked_docs
+bm25_results = load_or_create_bm25_results(args.data_path, corpus, qrels, queries, args.bm25_topk)
 
 
-results = reranker.rerank(corpus, queries, results, top_k=args.bm25_topk) 
+start_time = time()
+rerank_results = reranker.rerank(corpus, queries, bm25_results, top_k=args.bm25_topk) 
+end_time = time()
+print("Time taken to retrieve: {:.2f} seconds".format(end_time - start_time))
+
+retriever = EvaluateRetrieval(cross_encoder_model, k_values=[1,3,5,10,100], score_function="cos")
+ndcg, _map, recall, precision = retriever.evaluate(qrels, rerank_results, retriever.k_values)
+mrr = retriever.evaluate_custom(qrels, rerank_results, retriever.k_values, metric="mrr")
+
+print(recall)
+print(mrr)

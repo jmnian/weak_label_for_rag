@@ -33,7 +33,7 @@ corpus, queries, qrels = GenericDataLoader(args.data_path).load(split=split)
 #### Load model and then evaluate 
 if args.eval_recontriever or args.eval_contriever:
     model = DRES(models.SentenceBERT(model_name), batch_size=256, corpus_chunk_size=1_000_000)
-    retriever = EvaluateRetrieval(model, k_values=[1,3,5,10,100], score_function="dot")
+    retriever = EvaluateRetrieval(model, k_values=[1,3,5,10,100], score_function="cos")
 
     #### Retrieve dense results (format of results is identical to qrels)
     start_time = time()

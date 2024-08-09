@@ -36,7 +36,7 @@ Step 4. Evaluate Retriever's Ability on our sampled data:
                 python evaluations/retriever_ability_beir.py --beir_dataset_path="/WAVE/datasets/yfang_lab/BEIR" --model_path="bert-base-uncased" --dataset_name="msmarco"
         
 Step 5. Evaluate QA Ability (--data could be msmarco/nq/squad/trivia/wq )
-        DPR: 
+        DPR/BM25+CE/Contriever/ReContriever: 
                 python evaluations/QA_performance.py --top_k=5 --num_shot=0 --llm_name="llama3" --new_token=20 --use_gt_passage="n" --data="xx" --model_path="xx"
         BM25:
                 python evaluations/QA_performance.py --model_path="bm25" --top_k=5 --num_shot=0 --llm_name="llama3" --new_token=20 --use_gt_passage="n" --data="xx"

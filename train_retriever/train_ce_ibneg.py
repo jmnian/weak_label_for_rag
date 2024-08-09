@@ -49,7 +49,7 @@ model = CrossEncoder(args.encoder_name, num_labels=1, max_length=350)
 # sample some other qd pairs, using those d as negative. We do this for all relevant qd pair, resulting in 2000 * (neg_per_pos + 1) training samples
 ##################
 neg_per_pos = 9 
-dev_neg_per_pos = 100
+dev_neg_per_pos = 50
 ##################
 corpus_keys = list(corpus.keys())
 train_samples = []

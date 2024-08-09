@@ -70,7 +70,7 @@ if args.use_gt_passage == "y":
 elif args.model_path == "bm25":
     corpus = eval_util.load_jsonl_int_key({}, f"{data_path}/corpus.jsonl") # a dict
     bm25 = eval_util.load_or_create_bm25(corpus, f"{data_path}/bm25_{len(corpus)}.pkl")
-    for qid, rels in dev_queries.items():
+    for qid, rels in tqdm(dev_queries.items(), desc="BM25 Retrieving"):
         rel_passage = [dev_corpus[doc_id]['text'] for doc_id, value in dev_qrels[qid].items() if value == 1]
         if len(rel_passage) > 0:
             query, answer = dev_queries[qid], answers[qid]
@@ -114,10 +114,12 @@ else:
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 llm, tokenizer = eval_util.load_llm(args.llm_name, device, quantize=False)
 
-prompt_func_selector = {5: {0: eval_util.five_passage_0shot_prompt, 
+prompt_func_selector = {10:{0: eval_util.ten_passage_0shot_prompt,},
+                        5: {0: eval_util.five_passage_0shot_prompt, 
                             1: eval_util.five_passage_1shot_prompt,
                             2: eval_util.five_passage_2shot_prompt,
                             3: eval_util.five_passage_3shot_prompt},
+                        3: {0: eval_util.three_passage_0shot_prompt,},
                         1: {0: eval_util.one_passage_0shot_prompt},
                         0: {0: eval_util.no_passage_prompt},
                         }

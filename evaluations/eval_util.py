@@ -12,6 +12,9 @@ from nltk.tokenize import word_tokenize
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 from nltk.translate.meteor_score import meteor_score
 from scipy.stats import ttest_ind
+from rank_bm25 import BM25Okapi
+from tqdm import tqdm
+from nltk.tokenize import word_tokenize
 
 nltk.download('punkt')
 logging.getLogger("transformers").setLevel(logging.ERROR)
@@ -33,11 +36,37 @@ def load_or_create_bm25(corpus, filename):
         print(f"BM25 object created and saved to {filename}")
     return bm25
 
+def load_or_create_bm25_results(data_path, corpus, qrels, queries, bm25_topk=100):
+    results_file = os.path.join(data_path, f'bm25_top{bm25_topk}_on_test.json')
+
+    if os.path.isfile(results_file):
+        print("Load existing results from the JSON file", results_file)
+        with open(results_file, 'r') as f:
+            results = json.load(f)
+    else: 
+        print("No Results file found, creating one right now. ")
+        results = {}
+        
+        bm25 = load_or_create_bm25(corpus, f"{data_path}/bm25_{len(corpus)}.pkl")
+        
+        for query_id, relevant_docs in tqdm(qrels.items(), desc="BM25 retrieving"):
+            query = queries[query_id]
+            scores = bm25.get_scores(query)
+            ranked_indices = np.argsort(scores)[::-1][:bm25_topk]
+            results[query_id] = {idx: float(scores[idx]) for idx in ranked_indices}
+            
+        with open(results_file, 'w') as f:
+            json.dump(results, f, indent=4)
+        print("BM25 Results saved at", results_file)
+
+    return results
+
 def bm25_retrieve(bm25, corpus, question, top_k):
     question_tokens = word_tokenize(question.lower())
     passage_scores = bm25.get_scores(question_tokens)
     sorted_indices = np.argsort(passage_scores)[::-1][:top_k]
-    top_passages_with_scores = [(list(corpus.keys())[idx], corpus[list(corpus.keys())[idx]], passage_scores[idx]) for idx in sorted_indices]
+    # top_passages_with_scores = [(list(corpus.keys())[idx], corpus[list(corpus.keys())[idx]], passage_scores[idx]) for idx in sorted_indices]
+    top_passages_with_scores = [(idx, corpus[idx], passage_scores[idx]) for idx in sorted_indices]
     top_passages = [corpus[pid] for pid, _, score in top_passages_with_scores]
     return top_passages
 
@@ -96,6 +125,18 @@ ANSWER: '''
 # ANSWER: '''
 #     return prompt 
 
+def three_passage_0shot_prompt(passages, question):
+    prompt = f'''DOCUMENT: {passages[0]}
+DOCUMENT: {passages[1]}
+DOCUMENT: {passages[2]}
+QUESTION: {question}
+Answer the user's QUESTION using the DOCUMENT text above.
+Keep your answer ground in the facts of the DOCUMENT.
+If the DOCUMENT does not contain the facts to answer the QUESTION, forget about the DOCUMENTS and directly answer the QUESTION
+Keep the answer within one short sentence. 
+ANSWER: '''
+    return prompt 
+
 def five_passage_0shot_prompt(passages, question):
     prompt = f'''DOCUMENT: {passages[0]}
 DOCUMENT: {passages[1]}
@@ -110,7 +151,24 @@ Keep the answer within one short sentence.
 ANSWER: '''
     return prompt 
 
-
+def ten_passage_0shot_prompt(passages, question):
+    prompt = f'''DOCUMENT: {passages[0]}
+DOCUMENT: {passages[1]}
+DOCUMENT: {passages[2]}
+DOCUMENT: {passages[3]}
+DOCUMENT: {passages[4]}
+DOCUMENT: {passages[5]}
+DOCUMENT: {passages[6]}
+DOCUMENT: {passages[7]}
+DOCUMENT: {passages[8]}
+DOCUMENT: {passages[9]}
+QUESTION: {question}
+Answer the user's QUESTION using the DOCUMENT text above.
+Keep your answer ground in the facts of the DOCUMENT.
+If the DOCUMENT does not contain the facts to answer the QUESTION, forget about the DOCUMENTS and directly answer the QUESTION
+Keep the answer within one short sentence. 
+ANSWER: '''
+    return prompt 
 
 
 def five_passage_1shot_prompt(passages, question):
@@ -365,7 +423,7 @@ def evaluate(answers, file_name, token_num):
             bleu_score = calculate_bleu(answer, answer_gen)
             bleu_1_score = calculate_bleu(answer, answer_gen, n_grams=1)
             meteor = meteor_score([word_tokenize(answer)], word_tokenize(answer_gen))
-            em = 1 if answer in answer_gen else 0
+            em = 1 if answer == answer_gen else 0
             # Update best scores if current scores are higher
             best_scores['f1'] = max(best_scores['f1'], f1_gen)
             best_scores['rouge-1'] = max(best_scores['rouge-1'], scores['rouge-1']['f'])

@@ -97,7 +97,8 @@ def bm25_evaluation(corpus_path, queries_path, qrel_path, retrieve_top_k, bm25_p
     ranked_lists = {}
     for query_id, corpus_id in tqdm(qrel_dict.items(), desc="Processing Queries"):
         query = queries[query_id]
-        scores = bm25.get_scores(query)
+        query_tokens = word_tokenize(query.lower())
+        scores = bm25.get_scores(query_tokens)
         ranked_indices = np.argsort(scores)[::-1][:retrieve_top_k]
         ranked_docs = [list(corpus.keys())[idx] for idx in ranked_indices]
         ranked_lists[query_id] = ranked_docs
