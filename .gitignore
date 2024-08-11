@@ -5,3 +5,5 @@ train_retriever/output
 evaluations/corpus_embeddings
 evaluations/qa 
 evaluations/significance_test.py
+colbert_data/
+.ragatouille/

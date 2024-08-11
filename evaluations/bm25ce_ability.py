@@ -35,9 +35,6 @@ else:
 
 #### Load Data
 corpus, queries, qrels = GenericDataLoader(args.data_path).load(split=split)
-#### Load Model
-cross_encoder_model = CrossEncoder(model_name)
-reranker = Rerank(cross_encoder_model, batch_size=128)
 
 def load_or_create_bm25_results(data_path, corpus, qrels, queries, bm25_topk=100):
     results_file = os.path.join(data_path, f'bm25_top{bm25_topk}_on_test.json')
@@ -68,15 +65,28 @@ def load_or_create_bm25_results(data_path, corpus, qrels, queries, bm25_topk=100
 #### Format results into {qid: {pid: score, pid:score, ...}}
 bm25_results = load_or_create_bm25_results(args.data_path, corpus, qrels, queries, args.bm25_topk)
 
-
+#### Load Model
+cross_encoder_model = CrossEncoder(model_name)
+reranker = Rerank(cross_encoder_model, batch_size=128)
 start_time = time()
 rerank_results = reranker.rerank(corpus, queries, bm25_results, top_k=args.bm25_topk) 
 end_time = time()
 print("Time taken to retrieve: {:.2f} seconds".format(end_time - start_time))
 
-retriever = EvaluateRetrieval(cross_encoder_model, k_values=[1,3,5,10,100], score_function="cos")
-ndcg, _map, recall, precision = retriever.evaluate(qrels, rerank_results, retriever.k_values)
-mrr = retriever.evaluate_custom(qrels, rerank_results, retriever.k_values, metric="mrr")
+retriever = EvaluateRetrieval(k_values=[1,3,5,10,100], score_function="cos_sim")
+bm25_ndcg, bm25_map, bm25_recall, _ = EvaluateRetrieval.evaluate(qrels, bm25_results, retriever.k_values)
+ndcg, _map, recall, precision = EvaluateRetrieval.evaluate(qrels, rerank_results, retriever.k_values)
+bm25_mrr = EvaluateRetrieval.evaluate_custom(qrels, bm25_results, retriever.k_values, metric="mrr")
+mrr = EvaluateRetrieval.evaluate_custom(qrels, rerank_results, retriever.k_values, metric="mrr")
 
+print(f"BM25 results: ")
+print(bm25_ndcg)
+print(bm25_map)
+print(bm25_recall)
+print(bm25_mrr)
+
+print(f"BM25 retrieve top{args.bm25_topk} then CE rerank results: ({args.model_path.split('/')[-1]})")
+print(ndcg)
+print(_map)
 print(recall)
 print(mrr)

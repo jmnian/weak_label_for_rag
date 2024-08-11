@@ -2,8 +2,8 @@ import json
 from scipy.stats import ttest_rel, wilcoxon 
 import numpy as np
 
-baseline_file = "/WAVE/users2/unix/jnian/WeakLabelForRAG/evaluations/qa/msmarco/ReContriever__08_08_11:43_20token.json"
-improved_file = "evaluations/qa/msmarco/dpr_weak_ibneg_msmarco_qa_v2_train_ReContriever_top1_08_05_23:07__08_09_11:32_20token.json"
+baseline_file = "evaluations/qa/nq/ReContriever__08_10_23:56_20token.json"
+improved_file = "evaluations/qa/nq/dpr_weak_ibneg_nq_train_ReContriever_top1_08_06_10:33__08_11_00:32_20token.json"
 
 with open(baseline_file, 'r') as f:
     baseline_data = json.load(f)
@@ -12,7 +12,7 @@ with open(improved_file, 'r') as f:
     improved_data = json.load(f)
 
 # Extract metrics
-metrics = ["f1", "rouge-1", "rouge-2", "rouge-l", "bleu", "bleu-1", "meteor", "em"]
+metrics = ["f1", "rouge-1", "rouge-2", "rouge-l", "bleu", "bleu-1", "meteor"]
 results = {}
 
 for metric in metrics:
