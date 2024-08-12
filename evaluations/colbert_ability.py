@@ -54,7 +54,7 @@ def find_doc_id_by_text(corpus, search_text):
     return None
 
 
-results_file = f"/evaluations/colbert_retrieval_results/{args.index_name}_retrieval_resuls"
+results_file = f"evaluations/colbert_retrieval_results/{args.index_name}_retrieval_resuls.json"
 if os.path.exists(results_file):
     with open(results_file, 'r') as f:
         results = json.load(f)

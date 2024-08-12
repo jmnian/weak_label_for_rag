@@ -56,7 +56,7 @@ for qid, rel_pids in tqdm(qrel.items(), desc="LLM Reranking"):
     llm_score_list = []
     if which_experiment == "upr":
         for pid, passage, _ in top_passages_with_scores:
-            log_likelihood = query_likelihood(how_many_shot_prompt, question, passage, answer, llm, llm_tokenizer, device) 
+            log_likelihood = query_likelihood(0, question, passage, answer, llm, llm_tokenizer, device) 
             llm_score_list.append((pid, log_likelihood))
     if which_experiment.startswith("wrag"):
         for pid, passage, _ in top_passages_with_scores:     

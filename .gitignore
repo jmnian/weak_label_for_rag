@@ -5,6 +5,7 @@ train_retriever/output
 evaluations/corpus_embeddings
 evaluations/qa 
 evaluations/significance_test.py
+evaluations/colbert_retrieval_results
 colbert_data/
 .ragatouille/
 RAGatouille
