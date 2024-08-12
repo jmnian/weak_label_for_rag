@@ -396,7 +396,7 @@ def evaluate_against_no_passage(answers):
 #         print(f"{metric}: {gen_avg}")
 
 
-def evaluate(answers, file_name, token_num):
+def evaluate(answers, file_name=None, token_num=None):
     rouge = Rouge()
     results = {}
     bad = 0
@@ -443,10 +443,12 @@ def evaluate(answers, file_name, token_num):
     for metric, avg_score in avg_scores.items():
         print(f"{metric}: {avg_score}")
     
-    current_time = datetime.datetime.now()
-    time_string = current_time.strftime('%m_%d_%H:%M')
-    with open(f"{file_name}__{time_string}_{token_num}token.json", 'w') as f:
-        json.dump(results, f, indent=4)
-    print(f"{bad} answers are bad")
-    print(f"Individual results written to {file_name}__{time_string}_{token_num}token.json")
+    
+    if file_name is not None and file_name != "":
+        current_time = datetime.datetime.now()
+        time_string = current_time.strftime('%m_%d_%H:%M')
+        with open(f"{file_name}__{time_string}_{token_num}token.json", 'w') as f:
+            json.dump(results, f, indent=4)
+        print(f"{bad} answers are bad")
+        print(f"Individual results written to {file_name}__{time_string}_{token_num}token.json")
     

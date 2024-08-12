@@ -1,6 +1,0 @@
-mkdocs
-mkdocs-material
-yarl
-cairosvg
-mkdocstrings
-mkdocstrings-python

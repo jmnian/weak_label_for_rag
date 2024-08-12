@@ -16,9 +16,10 @@ Step 3. Train Retriever
         dpr ibneg gt -> python train_retriever/train_dpr_ibneg.py --num_epochs=20 --encoder_name="Yibin-Lei/ReContriever" --product="cosine"  --gt_or_weak="gt" --tsv="train_groundtruth_top1" --data_path="xx"
         ce ibneg -> python train_retriever/train_ce_ibneg.py --product="cosine" --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --tsv="train_weak" --data_path="xx"
         ce ibneg gt -> python train_retriever/train_ce_ibneg.py --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --product="cosine"  --gt_or_weak="gt" --tsv="train_groundtruth_top1" --data_path="xx"
-        ColBERT ibneg -> python train_retriever/train_colbert_ibneg.py --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --tsv="train_weak" --data_path="data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000"
+        ColBERT ibneg -> python train_retriever/train_colbert_ibneg.py --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --encoder_name="Yibin-Lei/ReContriever" --tsv="train_weak_full" --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000"
+        ColBERT ibneg gt -> python train_retriever/train_colbert_ibneg.py --gt_or_weak="gt" --encoder_name="Yibin-Lei/ReContriever" --tsv="train_groundtruth" --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000"
 
-Step 4. Evaluate Retriever's Ability on our sampled data:
+Step 4. Evaluate Retriever's Ability on our sampled data: MODEL PATH can be found in train_retriever/output. For ColBERT, look inside .ragatouille
         BM25: 
                 go to bm25_evaluation
         DPR: 
@@ -29,6 +30,9 @@ Step 4. Evaluate Retriever's Ability on our sampled data:
                 python evaluations/retriever_ability.py --eval_contriever --data_path="xx"
         BM25+CE:
                 python evaluations/bm25ce_ability.py --bm25_topk=100 --data_path="xx" --model_path="xx" 
+        ColBERT: 
+                python evaluations/colbert_ability.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000" --model_path="xx" --index_name="msmarco_weak_9neg"
+
 
         Evaluate Retriever's Ability on BEIR 
         DPR:
