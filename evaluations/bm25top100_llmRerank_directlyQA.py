@@ -96,7 +96,7 @@ results = {
 for qid, info in weak_and_ground_truth_labels.items():
     relevant_pids = set(info['rel_passage'])
     for model in ['llm_ranked_list', 'bm25_ranked_list']:
-        model_key = 'llm' if model == 'llm_ranked_list' else 'bm25'
+        model_key = 'llm' if model == 'llm_ranked_list' and which_experiment != 'bm25' else 'bm25'
         ranked_list = sorted(info[model], key=lambda x: x[1], reverse=True)
         
         for k in levels:
