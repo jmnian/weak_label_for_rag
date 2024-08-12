@@ -34,7 +34,7 @@ if __name__ == "__main__": # If i don't add this, the multiprocessing module com
         
     # Make pos_pairs = [[query, passage, 1], [query, passage, 0], ...]
     pairs = []
-    hard_neg_per_pos = 9
+    hard_neg_per_pos = 10
     for qid, rel in qrels.items():
         has_pos = False
         num_neg = hard_neg_per_pos
@@ -71,8 +71,8 @@ if __name__ == "__main__": # If i don't add this, the multiprocessing module com
                                 nbits=2, 
                                 maxsteps=500000,
                                 use_ib_negatives=True,  # using in batch negatives 
-                                learning_rate=1e-5,
-                                dim=128,
+                                learning_rate=2e-5,
+                                dim=768,
                                 doc_maxlen=350,
                                 use_relu=True,
                                 warmup_steps=0, # 'auto' for 10% of total steps
