@@ -30,8 +30,7 @@ Step 4. Evaluate Retriever's Ability on our sampled data: MODEL PATH can be foun
                 python evaluations/retriever_ability.py --eval_contriever --data_path="xx"
         BM25+CE:
                 python evaluations/bm25ce_ability.py --bm25_topk=100 --data_path="xx" --model_path="xx" 
-        ColBERT: 
-                python evaluations/colbert_ability.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000" --model_path="xx" --index_name="msmarco_weak_9neg"
+        
 
 
         Evaluate Retriever's Ability on BEIR 
@@ -50,7 +49,12 @@ Step 5. Evaluate QA Ability (--data could be msmarco/nq/squad/trivia/wq )
         No Passage: 
                 python evaluations/QA_performance.py --top_k=0 --num_shot=0 --llm_name="llama3" --new_token=20 --use_gt_passage="n" --data="xx"
 
+ColBERT Retrieval Ability and QA ability on MSMARCO: (DEFAULT TO USING TOP 1 PASSAGE TO QA)
+        (if you already have index, no need to add model_path, other wise, an index will be created for the model and it takes a long time)
+        python evaluations/colbert_ability.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000" --model_path="xx" --llm_name="llama3" --new_token=20 --index_name="msmarco_weak_9neg"
 
+To Run experiments for Directly QA using LLM reranked passages that were retrieved from BM25:
+        Go to "evaluations/bm25top100_llmRerank_directlyQA.py" and change the "which_experiment" at the top 
 
 To Run Table 5 (Fix prompt study different llm, ms marco on 500 val dataset): 
         Go to "weak_label_gen/generate_weak_labels.py", change parameters in "study_different_llm_on_msmarco" and run "python weak_label_gen/generate_weak_labels.py"
