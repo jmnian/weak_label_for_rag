@@ -83,6 +83,9 @@ else:
             if topk > 0:
                 pqa_list.append(([doc], query, answer, qid))        # THIS IS WHERE I ONLY TAKE TOP 1 TO DO QA
                 topk -= 1
+    # Save results to a JSON file
+    with open(results_file, 'w') as f:
+        json.dump(results, f, indent=4)
 
 # Evaluate Retrieval ability
 evaluator = EvaluateRetrieval(k_values=[1,3,5,10,100])
