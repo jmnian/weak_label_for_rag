@@ -53,22 +53,37 @@ def find_doc_id_by_text(corpus, search_text):
     print(f"Cant't find:{search_text}")
     return None
 
-results, pqa_list = {}, []
-answers = eval_util.load_jsonl({}, f"{args.data_path}/answers.jsonl")
 
-for qid, rel_doc in tqdm(qrels.items(), desc="ColBERT retrieving"): 
-    results[qid] = {}
-    query, answer = queries[qid], answers[qid]
-    colbert_results = RAG.search(query=query, k=100)
-    topk = 1
-    for doc_dict in colbert_results:
-        doc, score = doc_dict['content'], doc_dict['score']
-        doc_id = find_doc_id_by_text(corpus, doc)  # I know this is super slow. 
-        results[qid][doc_id] = score
-        if topk > 0:
-            pqa_list.append(([doc], query, answer, qid))        # THIS IS WHERE I ONLY TAKE TOP 1 TO DO QA
-            topk -= 1
-        
+results_file = f"/evaluations/colbert_retrieval_results/{args.index_name}_retrieval_resuls"
+if os.path.exists(results_file):
+    with open(results_file, 'r') as f:
+        results = json.load(f)
+    pqa_list = []
+    for qid, rank_dict in results.items():
+        query = queries[qid]
+        answer = answers[qid]
+        sorted_docs = sorted(doc_scores.items(), key=lambda item: item[1], reverse=True)
+        if sorted_docs:
+            top_doc_id = sorted_docs[0][0]                           # THIS IS WHERE I ONLY TAKE TOP 1 TO DO QA
+            top_doc_text = corpus[top_doc_id]['text']
+            pqa_list.append(([top_doc_text], query, answer, qid))
+else:
+    results, pqa_list = {}, []
+    answers = eval_util.load_jsonl({}, f"{args.data_path}/answers.jsonl")
+
+    for qid, rel_doc in tqdm(qrels.items(), desc="ColBERT retrieving"): 
+        results[qid] = {}
+        query, answer = queries[qid], answers[qid]
+        colbert_results = RAG.search(query=query, k=100)
+        topk = 1
+        for doc_dict in colbert_results:
+            doc, score = doc_dict['content'], doc_dict['score']
+            doc_id = find_doc_id_by_text(corpus, doc)  # I know this is super slow. 
+            results[qid][doc_id] = score
+            if topk > 0:
+                pqa_list.append(([doc], query, answer, qid))        # THIS IS WHERE I ONLY TAKE TOP 1 TO DO QA
+                topk -= 1
+
 # Evaluate Retrieval ability
 evaluator = EvaluateRetrieval(k_values=[1,3,5,10,100])
 ndcg, _map, recall, precision = evaluator.evaluate(qrels, results, evaluator.k_values)
