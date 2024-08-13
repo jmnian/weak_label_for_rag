@@ -53,7 +53,7 @@ def find_doc_id_by_text(corpus, search_text):
     print(f"Cant't find:{search_text}")
     return None
 
-
+answers = eval_util.load_jsonl({}, f"{args.data_path}/answers.jsonl")
 results_file = f"evaluations/colbert_retrieval_results/{args.index_name}_retrieval_resuls.json"
 if os.path.exists(results_file):
     with open(results_file, 'r') as f:
@@ -62,14 +62,13 @@ if os.path.exists(results_file):
     for qid, rank_dict in results.items():
         query = queries[qid]
         answer = answers[qid]
-        sorted_docs = sorted(doc_scores.items(), key=lambda item: item[1], reverse=True)
+        sorted_docs = sorted(rank_dict.items(), key=lambda item: item[1], reverse=True)
         if sorted_docs:
             top_doc_id = sorted_docs[0][0]                           # THIS IS WHERE I ONLY TAKE TOP 1 TO DO QA
             top_doc_text = corpus[top_doc_id]['text']
             pqa_list.append(([top_doc_text], query, answer, qid))
 else:
     results, pqa_list = {}, []
-    answers = eval_util.load_jsonl({}, f"{args.data_path}/answers.jsonl")
 
     for qid, rel_doc in tqdm(qrels.items(), desc="ColBERT retrieving"): 
         results[qid] = {}
