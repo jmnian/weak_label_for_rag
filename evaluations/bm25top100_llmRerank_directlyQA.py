@@ -171,17 +171,9 @@ for qid, item in weak_and_ground_truth_labels.items():
         ranked_list = sorted(item['bm25_ranked_list'], key=lambda x: x[1], reverse=True)
     else: 
         ranked_list = sorted(item['llm_ranked_list'], key=lambda x: x[1], reverse=True)
-    question, answer, passage = questions[qid], answers[qid], ranked_list[0][0]
+    question, answer, passage = questions[qid], answers[qid], corpus[ranked_list[0][0]]
 
-    if qa_topk_passage == 1 and which_experiment != "wrag_1shot" and which_experiment != "wrag_2shot":
-        prompt = one_passage_0shot_prompt(passage, question)
-    elif qa_topk_passage == 1 and which_experiment == "wrag_1shot":
-        prompt = one_passage_1shot_prompt(passage, question)
-    elif qa_topk_passage == 1 and which_experiment == "wrag_2shot":
-        prompt = one_passage_2shot_prompt(passage, question)
-    else: 
-        print("Not supported, change configurations")
-        x = 1/0
+    prompt = one_passage_0shot_prompt(passage, question)
         
     inputs = llm_tokenizer([prompt], return_tensors='pt').to(llm.device)
     output = llm.generate(**inputs, max_new_tokens=new_token)
