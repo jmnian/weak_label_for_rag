@@ -20,6 +20,8 @@ if __name__ == "__main__": # If i don't add this, the multiprocessing module com
     parser.add_argument('--encoder_name', type=str, help='What model to use as the encoder of the retriever')
     parser.add_argument('--gt_or_weak', type=str, help='Use Ground truth data to train or not')
     parser.add_argument('--tsv', type=str, help='When using Ground truth or Weak data to train, which tsv to use')
+    parser.add_argument('--neg', type=int, help='How many negatives per positive')
+    parser.add_argument('--lr', type=float, help='ColBERT Learning rate')
     args = parser.parse_args()
 
 
@@ -34,7 +36,7 @@ if __name__ == "__main__": # If i don't add this, the multiprocessing module com
         
     # Make pos_pairs = [[query, passage, 1], [query, passage, 0], ...]
     pairs = []
-    hard_neg_per_pos = 10
+    hard_neg_per_pos = args.neg 
     for qid, rel in qrels.items():
         has_pos = False
         num_neg = hard_neg_per_pos
@@ -71,7 +73,7 @@ if __name__ == "__main__": # If i don't add this, the multiprocessing module com
                                 nbits=4, 
                                 maxsteps=500000,
                                 use_ib_negatives=True,  # using in batch negatives 
-                                learning_rate=5e-4,
+                                learning_rate=args.lr,
                                 dim=128,
                                 doc_maxlen=350,
                                 use_relu=True,
