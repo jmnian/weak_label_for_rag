@@ -76,6 +76,8 @@ else:
         for doc_dict in colbert_results:
             doc, score = doc_dict['content'], doc_dict['score']
             doc_id = find_doc_id_by_text(corpus, doc)  # I know this is super slow. 
+            if doc_id is None:
+                continue 
             results[qid][doc_id] = score
             if topk > 0:
                 pqa_list.append(([doc], query, answer, qid))        # THIS IS WHERE I ONLY TAKE TOP 1 TO DO QA

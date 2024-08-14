@@ -57,7 +57,7 @@ Step 5. Evaluate QA Ability (--data could be msmarco/nq/squad/trivia/wq )
 
 ColBERT Retrieval Ability and QA ability on MSMARCO: (DEFAULT TO USING TOP 1 PASSAGE TO QA)
         (if you already have index, no need to add model_path, other wise, an index will be created for the model and it takes a long time)
-        python evaluations/colbert_ability.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000" --model_path="xx" --llm_name="llama3" --new_token=20 --index_name="xx"
+        python evaluations/colbert_ability.py --llm_name="llama3" --new_token=20 --data_path="xx" --model_path="xx" --index_name="xx"
 
 To Run experiments for Directly QA using LLM reranked passages that were retrieved from BM25:
         Go to "evaluations/bm25top100_llmRerank_directlyQA.py" and change the "which_experiment" at the top 

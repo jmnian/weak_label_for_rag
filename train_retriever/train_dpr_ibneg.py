@@ -48,7 +48,7 @@ elif args.gt_or_weak == "weak":
     print("Using llm weak label to train, in-batch negative style")
     corpus, queries, qrels = GenericDataLoader(data_folder=args.data_path, 
                                             qrels_folder=args.data_path+args.weak_label_path).load(split=args.tsv)
-dev_corpus, dev_queries, dev_qrels = GenericDataLoader(args.data_path).load(split="test")
+dev_corpus, dev_queries, dev_qrels = GenericDataLoader(args.data_path).load(split="val")
 
 
 

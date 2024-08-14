@@ -104,7 +104,7 @@ ANSWER: '''
     return prompt 
 
 def one_passage_0shot_prompt(passages, question): # use "passages" just for consistency, there should only be 1 sentence in this list
-    prompt = f'''PASSAGE: {passages[0]} 
+    prompt = f'''DOCUMENT: {passages[0]} 
 QUESTION: {question}
 Answer the user's QUESTION using the DOCUMENT text above.
 Keep your answer ground in the facts of the DOCUMENT.
@@ -114,11 +114,11 @@ ANSWER: '''
     return prompt 
 
 # def five_passage_0shot_prompt(passages, question): # This is old 
-#     prompt = f'''PASSAGE: {passages[0]}
-# PASSAGE: {passages[1]}
-# PASSAGE: {passages[2]}
-# PASSAGE: {passages[3]}
-# PASSAGE: {passages[4]}
+#     prompt = f'''DOCUMENT: {passages[0]}
+# DOCUMENT: {passages[1]}
+# DOCUMENT: {passages[2]}
+# DOCUMENT: {passages[3]}
+# DOCUMENT: {passages[4]}
 # QUESTION: {question}
 # The passages above may or may not be relevant to the question. If you find any one of them relevant to the question, then please use the text in the passage to answer. Otherwise, use your own knowledge to answer.
 # Keep the answer within one short sentence.
