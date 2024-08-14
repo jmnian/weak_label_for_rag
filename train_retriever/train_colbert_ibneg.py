@@ -34,30 +34,49 @@ if __name__ == "__main__": # If i don't add this, the multiprocessing module com
         corpus, queries, qrels = GenericDataLoader(data_folder=args.data_path, 
                                                 qrels_folder=args.data_path+args.weak_label_path).load(split=args.tsv)
         
-    # Make pos_pairs = [[query, passage, 1], [query, passage, 0], ...]
+    
+    # Make pairs = [[query, passage, 1], [query, passage, 0], ...]
     pairs = []
     hard_neg_per_pos = args.neg 
-    for qid, rel in qrels.items():
-        has_pos = False
-        num_neg = hard_neg_per_pos
-        query = queries[qid]
-        for pid, score in rel.items():
-            if num_neg == 0 and has_pos: 
-                break 
-            if score == 1:
+    if "msmarco" in args.data_path:
+        for qid, rel in qrels.items():
+            has_pos = False
+            num_neg = hard_neg_per_pos
+            query = queries[qid]
+            for pid, score in rel.items():
+                if num_neg == 0 and has_pos: 
+                    break 
+                if score == 1:
+                    positive = corpus[pid]['text'] + ' ' + corpus[pid]['title']
+                    pairs.append([query, positive, 1])
+                    has_pos = True
+                elif score == 0 and num_neg > 0: 
+                    negative = corpus[pid]['text'] + ' ' + corpus[pid]['title']
+                    pairs.append([query, negative, 0])
+                    num_neg -= 1 
+    else: 
+        qids = qrels.keys()
+        for qid, rel in qrels.items():
+            query = queries[qid]
+            positives = [pid for pid, score in rel.items() if score == 1]
+            for pid in positives:
                 positive = corpus[pid]['text'] + ' ' + corpus[pid]['title']
                 pairs.append([query, positive, 1])
-                has_pos = True
-            elif score == 0 and num_neg > 0: 
-                negative = corpus[pid]['text'] + ' ' + corpus[pid]['title']
-                pairs.append([query, negative, 0])
-                num_neg -= 1 
-
+                
+                neg_samples = []
+                while len(neg_samples) < hard_neg_per_pos:
+                    neg_qid = random.sample(list(qids), 1)[0]
+                    if neg_qid != qid: 
+                        neg_samples.append(neg_qid)
+                
+                for neg_pid in neg_samples:
+                    negative = corpus[neg_pid]['text'] + ' ' + corpus[neg_pid]['title']
+                    pairs.append([query, negative, 0])
 
     trainer = RAGTrainer(model_name=f"colbert_{args.gt_or_weak}_{args.data_path.split('/')[-1]}", 
-                            pretrained_model_name = args.encoder_name,
-                            language_code='en',
-                            n_usable_gpus=1
+                        pretrained_model_name = args.encoder_name,
+                        language_code='en',
+                        n_usable_gpus=1
                         )
     trainer.prepare_training_data(raw_data=pairs,
                                 data_out_path='./colbert_data/',

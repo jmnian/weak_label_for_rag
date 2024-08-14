@@ -11,9 +11,9 @@
             "program": "${file}",
             "console": "integratedTerminal",
             // "args": ["--xxx", "aa", "--yy"]
-            "args": ["--weak_label_path", "/llama3_0shot_prompt_top100", "--num_epochs", "20", "--encoder_name", "bert-base-uncased", "--product", 
-            "cosine", "--gt_or_weak", "weak", "--data_path", "/WAVE/users2/unix/jnian/WeakLabelForRAG/data/nq_train_corpus500000_weakTrainQ2000_ValQ3000",
-            "--tsv", "train_weak_top5"]
+            "args": ["--weak_label_path", "/llama3_0shot_prompt_top100", "--encoder_name", "bert-base-uncased", "--gt_or_weak", "weak", 
+            "--data_path", "/WAVE/users2/unix/jnian/WeakLabelForRAG/data/nq_train_corpus500000_weakTrainQ2000_ValQ3000",
+            "--tsv", "train_weak", "--neg", "10", "lr", "1e-5"]
         }
     ]
 }

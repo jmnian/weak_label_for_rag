@@ -12,12 +12,18 @@ Step 3. Train Retriever
     Before start training, make sure to make train_groundtruth_allones.tsv and val.tsv and test.tsv. Scripts are in /data_workers/
         dpr weak -> python train_retriever/train_dpr_weak.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2000_ValQ3000" --weak_label_path="/llama3_old_prompt" --num_hard_neg=10 --num_epochs=16 --encoder_name="bert-base-uncased" --product="cosine" --loss="triplet"
         dpr gt   -> python train_retriever/train_dpr_gt.py --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2000_ValQ3000" --num_epochs=16 --encoder_name="bert-base-uncased" --product="cosine" --loss="triplet"
-        dpr ibneg-> python train_retriever/train_dpr_ibneg.py --product="cosine" --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --tsv="train_weak_top5" --data_path="xx" 
+        dpr ibneg-> python train_retriever/train_dpr_ibneg.py --product="cosine" --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --num_epochs=20 --encoder_name="Yibin-Lei/ReContriever" --tsv="train_weak" --data_path="xx" 
         dpr ibneg gt -> python train_retriever/train_dpr_ibneg.py --num_epochs=20 --encoder_name="Yibin-Lei/ReContriever" --product="cosine"  --gt_or_weak="gt" --tsv="train_groundtruth_top1" --data_path="xx"
         ce ibneg -> python train_retriever/train_ce_ibneg.py --product="cosine" --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --tsv="train_weak" --data_path="xx"
         ce ibneg gt -> python train_retriever/train_ce_ibneg.py --num_epochs=21 --encoder_name="Yibin-Lei/ReContriever" --product="cosine"  --gt_or_weak="gt" --tsv="train_groundtruth_top1" --data_path="xx"
-        ColBERT ibneg -> python train_retriever/train_colbert_ibneg.py --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --encoder_name="bert-base-uncased" --tsv="train_weak_full" --neg=10 --lr=5e-4 --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000"
-        ColBERT ibneg gt -> python train_retriever/train_colbert_ibneg.py --gt_or_weak="gt" --encoder_name="bert-base-uncased" --tsv="train_groundtruth" --neg=10 --lr=1e-5 --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000"
+        ColBERT ibneg 
+                -> python train_retriever/train_colbert_ibneg.py --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --encoder_name="bert-base-uncased" --tsv="train_weak_full" --neg=10 --lr=1e-5 --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000"
+        ColBERT ibneg gt 
+                -> python train_retriever/train_colbert_ibneg.py --gt_or_weak="gt" --encoder_name="bert-base-uncased" --tsv="train_groundtruth" --neg=10 --lr=1e-5 --data_path="/WAVE/users2/unix/jnian/WeakLabelForRAG/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000"
+        ColBERT ibneg if not msmarco 
+                -> python train_retriever/train_colbert_ibneg.py --gt_or_weak="weak" --weak_label_path="/llama3_0shot_prompt_top100" --encoder_name="bert-base-uncased" --tsv="train_weak" --neg=10 --lr=1e-5 --data_path="xx"
+        ColBERT ibneg gt if not msmarco 
+                -> python train_retriever/train_colbert_ibneg.py --gt_or_weak="gt" --encoder_name="bert-base-uncased" --tsv="train_groundtruth_top1" --neg=10 --lr=1e-5 --data_path="xx"
 
 Step 4. Evaluate Retriever's Ability on our sampled data: MODEL PATH can be found in train_retriever/output. For ColBERT, look inside .ragatouille
         BM25: 

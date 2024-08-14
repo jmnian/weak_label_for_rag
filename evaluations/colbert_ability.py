@@ -46,12 +46,10 @@ results = {qid: {doc_id: score}, ...}
 '''
 corpus, queries, qrels = GenericDataLoader(args.data_path).load(split="test")
 
+text_to_doc_id = {item['text']: doc_id for doc_id, item in corpus.items()}
+
 def find_doc_id_by_text(corpus, search_text):
-    for doc_id, content in corpus.items():
-        if content.get('text') == search_text or search_text in content.get('text'):
-            return str(doc_id)
-    print(f"Cant't find:{search_text}")
-    return None
+    return text_to_doc_id.get(search_text, None)
 
 answers = eval_util.load_jsonl({}, f"{args.data_path}/answers.jsonl")
 results_file = f"evaluations/colbert_retrieval_results/{args.index_name}_retrieval_resuls.json"
