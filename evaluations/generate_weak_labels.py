@@ -1,5 +1,5 @@
 import os, sys, csv, random, json, re, pickle
-os.environ['HF_HOME'] = '/local/scratch' # Comment this out if you are not running on WAVE
+# os.environ['HF_HOME'] = '/local/scratch' # Comment this out if you are not running on WAVE
 # os.environ['TRANSFORMERS_CACHE'] = '/local/scratch'
 import numpy as np
 import pandas as pd 
@@ -66,7 +66,7 @@ def load_or_create_bm25(corpus, filename):
         print(f"BM25 object created and saved to {filename}")
     return bm25
 
-def load_llm(llm_name, device, quantize=False):
+def load_llm(llm_name, device, quantize=False, hf_token=""):
     model_name = None
     model = None 
     if llm_name == "llama3":
@@ -99,7 +99,7 @@ def load_llm(llm_name, device, quantize=False):
             # torch_dtype=torch.bfloat16, # if using 16 bit
             quantization_config=quant_config, # if using 4 bit
             # device_map={"": 0}, # more advanced way to map different layers to different device
-            token="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",
+            token=hf_token,
         )
     else: 
         model = AutoModelForCausalLM.from_pretrained(
@@ -107,10 +107,10 @@ def load_llm(llm_name, device, quantize=False):
             torch_dtype=torch.bfloat16, # if using 16 bit
             # quantization_config=quant_config, # if using 4 bit
             # device_map={"": 0}, # more advanced way to map different layers to different device
-            token="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",
+            token=hf_token,
         )
         model.to(device) # comment out if using 4 bit
-    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True, token="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")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True, token=hf_token)
     tokenizer.pad_token = tokenizer.eos_token # help handling the end of generated texts
     tokenizer.padding_side = "right" # to fix the issue with fp16 during forward pass
     return model, tokenizer 
@@ -377,7 +377,8 @@ def generate_weak_labels(use_upr: str=False,
                          llm_name: str = "llama3", 
                          first_stage_ret_count: int = 100, 
                          how_many_shot_prompt: int = 0,
-                         data_path: str = ""): 
+                         data_path: str = "",
+                         hf_token: str = ""): 
     """
     Load from jsonl: questions = {qid: "question"}      corpus = {pid: "passage"}     answers = {qid: "answer"}     
     Load from qrels: qrel = {qid: pid}     from train_groundtruth.tsv (take all 1200 unique query ids)
@@ -431,7 +432,7 @@ def generate_weak_labels(use_upr: str=False,
     bm25 = load_or_create_bm25(corpus, f"{data_path}/bm25_{len(corpus)}.pkl")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("using", device)
-    llm, llm_tokenizer = load_llm(llm_name, device, False)
+    llm, llm_tokenizer = load_llm(llm_name, device, False, hf_token)
     
     # Retrieve and rerank 
     weak_labels = []
@@ -591,7 +592,7 @@ def mean_reciprocal_rank(ranked_list, relevant_set):
             return 1 / index
     return 0
 
-def study_different_llm_on_msmarco(first_stage_ret_count, llm_name, levels): 
+def study_different_llm_on_msmarco(first_stage_ret_count, llm_name, levels, hf_token): 
     
     data_path = "data/msmarco_qa_v2_train_corpus500000_weakTrainQ2048_ValQ10000"
     
@@ -612,7 +613,7 @@ def study_different_llm_on_msmarco(first_stage_ret_count, llm_name, levels):
     bm25 = load_or_create_bm25(corpus, f"{data_path}/bm25_{len(corpus)}.pkl")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("using", device)
-    llm, llm_tokenizer = load_llm(llm_name, device, False)
+    llm, llm_tokenizer = load_llm(llm_name, device, False. hf_token)
         
     for qid, rel_pids in tqdm(qrel.items(), desc="Processing questions"):
         question, answer = questions[qid], answers[qid]
@@ -666,19 +667,22 @@ def study_different_llm_on_msmarco(first_stage_ret_count, llm_name, levels):
     
 if __name__ == '__main__': 
     set_random_seed(42)
-    # path = generate_corpus_queries_qrels("trivia", "train", 500_000, 2000, 3000, 0, "/WAVE/users2/unix/jnian/WeakLabelForRAG/data")
+    hf_token = "xx" # Put yours here
+    path = generate_corpus_queries_qrels("msmarco", "train", 500_000, 2000, 3000, 0, "WeakLabelForRAG/data")
     # specifically for WebQ:
-    # path = generate_corpus_queries_qrels("wq", "train", 163683, 2000, 474, 0, "/WAVE/users2/unix/jnian/WeakLabelForRAG/data")
-    # generate_weak_labels(False, "llama3", 50, 0, "/WAVE/users2/unix/jnian/WeakLabelForRAG/data/trivia_train_corpus500000_weakTrainQ2000_ValQ3000")
+    # path = generate_corpus_queries_qrels("wq", "train", 163683, 2000, 474, 0, "WeakLabelForRAG/data")
+    generate_weak_labels(False, "llama3", 100, 0, "data_path here", hf_token)
 
-    # produce_all_answers_file("wq", 2000, 474, "/WAVE/users2/unix/jnian/WeakLabelForRAG/data/wq_train_corpus163683_weakTrainQ2000_ValQ474")
+    ######## utility function
+    # produce_all_answers_file("wq", 2000, 474, "/WeakLabelForRAG/data/wq_train_corpus163683_weakTrainQ2000_ValQ474", hf_token)
     
     
     
-    # Below are not for generating weak label dataset
-    ###################################################################################
-    # supported llm names: llama3   llama3.1    gemma2     phi3    mistral     llama2
-    #                      bm25 results will come out together
-    # first_stage_ret_count: how many documents BM25 retrieves for a given query
-    # levels: the Ks in recall@k and overall mrr
-    study_different_llm_on_msmarco(first_stage_ret_count=100, llm_name="llama3", levels=[1, 5, 10, 20, 50, 100])
+    # # Below are not for generating weak label dataset
+    # ###################################################################################
+    # # supported llm names: llama3   llama3.1    gemma2     phi3    mistral     llama2
+    # #                      bm25 results will come out together
+    # # first_stage_ret_count: how many documents BM25 retrieves for a given query
+    # # levels: the Ks in recall@k and overall mrr
+    # study_different_llm_on_msmarco(first_stage_ret_count=100, llm_name="llama3", levels=[1, 5, 10, 20, 50, 100], hf_token=hf_token)
+    #####################################################################################

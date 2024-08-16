@@ -91,7 +91,7 @@ if __name__ == "__main__": # If i don't add this, the multiprocessing module com
     model_path = trainer.train( batch_size=64, 
                                 nbits=4, 
                                 maxsteps=500000,
-                                use_ib_negatives=True,  # using in batch negatives 
+                                use_ib_negatives=False,  
                                 learning_rate=args.lr,
                                 dim=128,
                                 doc_maxlen=350,

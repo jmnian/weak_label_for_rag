@@ -26,14 +26,16 @@ Step 3. Train Retriever
                 -> python train_retriever/train_colbert_ibneg.py --gt_or_weak="gt" --encoder_name="bert-base-uncased" --tsv="train_groundtruth_top1" --neg=10 --lr=1e-5 --data_path="xx"
 
 Step 4. Evaluate Retriever's Ability on our sampled data: MODEL PATH can be found in train_retriever/output. For ColBERT, look inside .ragatouille
+        Note that --data_path is the path to the folder inside the data folder, for example, for msmarco the data_path should be "xxxx/data/msmarco_qa_v2_train_corpus500000_weakTrainQ2000_ValQ3000"
+        For --model_path, it is the folder immediately inside "train_retriever/output", for example, "xxx/train_retriever/output/dpr_weak_ibneg_msmarco_qa_v2_train_ReContriever_train_weak_08_14_12:23"
         BM25: 
                 go to bm25_evaluation
         DPR: 
-                python evaluations/retriever_ability.py --data_path="xx" --model_path="xx"
+                python evaluations/dpr_ability.py --data_path="xx" --model_path="xx"
         ReContriever BiEncoder:
-                python evaluations/retriever_ability.py --eval_recontriever --data_path="xx"
+                python evaluations/dpr_ability.py --eval_recontriever --data_path="xx"
         Contriever BiEncoder: 
-                python evaluations/retriever_ability.py --eval_contriever --data_path="xx"
+                python evaluations/dpr_ability.py --eval_contriever --data_path="xx"
         BM25+CE:
                 python evaluations/bm25ce_ability.py --bm25_topk=100 --data_path="xx" --model_path="xx" 
         

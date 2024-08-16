@@ -8,6 +8,7 @@ parser = argparse.ArgumentParser(description="Script for training a retriever")
 parser.add_argument('--data_path', type=str, help='Path to the corpus, queries, etc.')
 parser.add_argument('--model_path', type=str, help='Path to the model that you want to evaluate')
 parser.add_argument('--llm_name', type=str, help="Which LLM to use to answer the question")
+parser.add_argument('--hf_token', type=str, help='Add your HuggingFace token here')
 parser.add_argument('--new_token', type=int, help="Number of new token to allow llm to generate")
 parser.add_argument('--index_name', type=str, help="Give the index a name, or try to load an existing index")
 args = parser.parse_args()
@@ -98,7 +99,7 @@ print(mrr)
 
 # DOING QA and then evaluate 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-llm, tokenizer = eval_util.load_llm(args.llm_name, device, False)
+llm, tokenizer = eval_util.load_llm(args.llm_name, device, False, args.hf_token)
 answers_tobe_eval = []
 
 for passages, question, answer, qid in tqdm(pqa_list, desc="Generating Answers"):

@@ -243,7 +243,7 @@ Keep the answer within one short sentence.
 ANSWER: '''
     return prompt 
 
-def load_llm(llm_name, device, quantize=False):
+def load_llm(llm_name, device, quantize=False, hf_token=""):
     model_name = None
     model = None 
     if llm_name == "llama3":
@@ -276,7 +276,7 @@ def load_llm(llm_name, device, quantize=False):
             # torch_dtype=torch.bfloat16, # if using 16 bit
             quantization_config=quant_config, # if using 4 bit
             # device_map={"": 0}, # more advanced way to map different layers to different device
-            token="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",
+            token=hf_token,
         )
     else: 
         if llm_name == "phi3":
@@ -286,7 +286,7 @@ def load_llm(llm_name, device, quantize=False):
                 # quantization_config=quant_config, # if using 4 bit
                 # device_map={"": 0}, # more advanced way to map different layers to different device
                 trust_remote_code=True,
-                token="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",
+                token=hf_token,
             )
         else:
             model = AutoModelForCausalLM.from_pretrained(
@@ -294,10 +294,10 @@ def load_llm(llm_name, device, quantize=False):
                 torch_dtype=torch.bfloat16, # if using 16 bit
                 # quantization_config=quant_config, # if using 4 bit
                 # device_map={"": 0}, # more advanced way to map different layers to different device
-                token="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",
+                token=hf_token,
             )
         model.to(device) # comment out if using 4 bit
-    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True, token="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")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True, token=hf_token)
     tokenizer.pad_token = tokenizer.eos_token # help handling the end of generated texts
     tokenizer.padding_side = "right" # to fix the issue with fp16 during forward pass
     return model, tokenizer 

@@ -14,7 +14,8 @@ parser = argparse.ArgumentParser(description="Script for training a retriever")
 parser.add_argument('--model_path', type=str, help='Path to the model (the parent folder of state dict), or just type bm25')
 parser.add_argument('--top_k', type=int, help="Retrieve top k to add to prompt for QA")
 parser.add_argument('--num_shot', type=int, help="How many shots you want the prompt to have")
-parser.add_argument('--llm_name', type=str, help='Choose a llm among llama3/gemma2/phi3/mistral/llama2')
+parser.add_argument('--llm_name', type=str, help='Choose a llm among llama3/llama3.1/gemma2/phi3/mistral/llama2')
+parser.add_argument('--hf_token', type=str, help='Add your HuggingFace token here')
 parser.add_argument('--new_token', type=int, help='number of new tokens to generate')
 parser.add_argument('--use_gt_passage', type=str, help='Use ground truth passage to QA')
 parser.add_argument('--data', type=str, help='Which dataset to evaluate on')
@@ -112,7 +113,7 @@ else:
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-llm, tokenizer = eval_util.load_llm(args.llm_name, device, quantize=False)
+llm, tokenizer = eval_util.load_llm(args.llm_name, device, quantize=False, hf_token=args.hf_token)
 
 prompt_func_selector = {10:{0: eval_util.ten_passage_0shot_prompt,},
                         5: {0: eval_util.five_passage_0shot_prompt, 
