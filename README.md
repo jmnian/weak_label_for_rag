@@ -16,14 +16,16 @@ For orginal datasets, please visit https://microsoft.github.io/msmarco/ for thei
 ## Conduct the full experiment
 
 ### Step 1: Generate Weak Labels
-Click `weak_label_gen/generate_weak_labels.py`, remember to add your huggingface token in the code. `generate_corpus_queries_qrels()` will create a folder under `data` with corpus, queries, qrels (train, val). Use `data_workers/split_val_groundtruth.py` to split val into val and test. `generate_weak_labels()` will create a folder under `data/xxxxxxx` with `full_rankxx.jsonl`,` train_weak.tsv`, and `train_weak_full.tsv`. <br><br> Run using `python weak_label_gen/generate_weak_labels` 
+Go to `weak_label_gen/generate_weak_labels.py`, remember to add your huggingface token in the code. `generate_corpus_queries_qrels()` will create a folder under `data` with corpus, queries, qrels (train, val). Use `data_workers/split_val_groundtruth.py` to split val into val and test. `generate_weak_labels()` will create a folder under `data/xxxxxxx` with `full_rankxx.jsonl`,` train_weak.tsv`, and `train_weak_full.tsv`. <br><br> Run using `python weak_label_gen/generate_weak_labels` 
+<br>
+Or you can just download from Zenodo to skip this step. You can verify everything is good by running Step 2. 
 
 ### Step 2: Evaluate Weak Label Quality
-Click `evaluations/weak_label_quality.py` -> specify k values, and the `full_rankxxx.jsonl` object, to see recall, mrr, etc. 
+Go to `evaluations/weak_label_quality.py` -> specify k values, and the `full_rankxxx.jsonl` object, to see recall, mrr, etc. 
 
 ### Step 3: Train Retriever
 
-Before start training, make sure to make `train_groundtruth_allones.tsv` and `val.tsv`. Scripts are in `data_workers`
+Before start training, make sure to make `train_groundtruth_allones.tsv` or `train_groundtruth_top1.tsv` and `val.tsv`. Scripts are in `data_workers`. Or if you downloaded the dataset from our Zenodo, then you should already have all of them.
 
 DPR weak label: 
 ```
@@ -50,7 +52,7 @@ python train_retriever/train_colbert_ibneg.py --gt_or_weak="gt" --encoder_name="
 
 ### Step 4: Retrieval Evaluations 
 
-BM25: go to `evaluations/bm25_evaluation`
+BM25: Go to `evaluations/bm25_evaluation`
 
 DPR:
 ``` 
@@ -71,7 +73,7 @@ Note: `--model_path` can be found in `train_retriever/output`. For ColBERT, look
 
 
 ### Step 5: OpenQA Evaluations
-In our code we support `llama3, llama3.1, gemma2, phi3, mistral, llama2`
+Our code supports `llama3, llama3.1, gemma2, phi3, mistral, llama2`
 
 Naive: 
 ```
@@ -85,7 +87,7 @@ BM25:
 ```
 python evaluations/QA_performance.py --model_path="bm25" --top_k=5 --num_shot=0 --llm_name="llama3" --hf_token="xx" --new_token=20 --use_gt_passage="n" --data="xx"
 ```
-DPR/Contriever/ReContriever as retriever, OpenQA:
+DPR/Contriever/ReContriever (indexing takes a long time, we save the index by just saving all the embeddings to a `.pth` file):
 ```
 python evaluations/QA_performance.py --top_k=5 --num_shot=0 --llm_name="llama3" --hf_token="xx" --new_token=20 --use_gt_passage="n" --data="xx" --model_path="xx"
 ``` 
@@ -94,11 +96,11 @@ ColBERT: (index creation might take a long time. If you already have index, no n
 python evaluations/colbert_ability.py --llm_name="llama3" --hf_token="xx" --new_token=20 --data_path="xx" --model_path="xx" --index_name="give it a name"
 ```
 
-### Ablations Experiment:
+### Ablations:
 
 Table 4 in the paper (Experiments for Direct QA Using LLM Reranked Passages): Go to `evaluations/bm25top100_llmRerank_directlyQA.py` and change the `which_experiment` at the top of the file. <br>
 
-Figure 3 in the paper (Fix Prompt Study Different LLM, MSMARCO on 500 Val Dataset): 
+Figure 3 in the paper (Fix Prompt Study Different LLM, MSMARCO on 500 Val): 
 Go to `weak_label_gen/generate_weak_labels.py`, change parameters in `study_different_llm_on_msmarco`, comment out other code and run `python weak_label_gen/generate_weak_labels.py`
 
 
