@@ -107,5 +107,13 @@ Go to `weak_label_gen/generate_weak_labels.py`, change parameters in `study_diff
 ## Citation
 
 ```
-coming soon
+@misc{nian2024wragweaklysuperviseddense,
+      title={W-RAG: Weakly Supervised Dense Retrieval in RAG for Open-domain Question Answering}, 
+      author={Jinming Nian and Zhiyuan Peng and Qifan Wang and Yi Fang},
+      year={2024},
+      eprint={2408.08444},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2408.08444}, 
+}
 ```
