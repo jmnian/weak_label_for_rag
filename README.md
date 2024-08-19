@@ -2,6 +2,8 @@
 
 We define passage relevance as "how likely the passage elicits correct answer from a LLM" when it comes to RAG. This project re-labels passages from MSMARCO QnA v2.1, NQ, SQuAD, and WebQ according to this relevance definition. These weak labels are then used to train a dense retriever which will finally retrieve relevant passages to help LLM generate better responses. 
 
+arXiv link: https://arxiv.org/abs/2408.08444
+
 ## Setting up: 
 
 We use `python 3.9.18`, and `transformers 4.43.3`, `torch 2.2.0`, `ragatouille 0.0.8`. Note that we made some modifications to `sentence-transformers` and `beir`, so please `cd` into `sentence-transformers_2.2.2` and `beir` in this project and do `pip install .` do install them. <br>
